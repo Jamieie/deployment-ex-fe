@@ -9,6 +9,7 @@ async function getProducts() {
       headers: {
         'Content-Type': 'application/json',
       },
+      cache: 'no-store',
     });
     
     if (!response.ok) {
@@ -16,14 +17,21 @@ async function getProducts() {
     }
     
     const products = await response.json();
-    return products.map((product: any) => ({
-      id: product.id.toString(),
-      name: product.name,
-      price: parseFloat(product.price),
-      description: product.description,
-      image: product.image,
-      category: product.category,
-    }));
+    return products.map((product: any) => {
+      try {
+        return {
+          id: product.id.toString(),
+          name: product.name || '',
+          price: parseFloat(product.price) || 0,
+          description: product.description || '',
+          image: product.image || '/images/planner1.jpg', // 기본 이미지 설정
+          category: product.category || 'planners', // 기본 카테고리 설정
+        };
+      } catch (error) {
+        console.error('Error parsing product:', product, error);
+        return null;
+      }
+    }).filter(Boolean); // null 값 제거
   } catch (error) {
     console.error('Error fetching products:', error);
     return [];
