@@ -3,43 +3,36 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductList from '@/components/ProductList';
 
-// 임시 상품 데이터
-const featuredProducts = [
-  {
-    id: '1',
-    name: 'Premium Planner',
-    price: 29.99,
-    image: '/images/planner1.jpg',
-    description: 'High-quality planner with premium paper',
-    category: 'planners'
-  },
-  {
-    id: '2',
-    name: 'Bullet Journal',
-    price: 24.99,
-    image: '/images/planner2.jpg',
-    description: 'Perfect for bullet journaling enthusiasts',
-    category: 'journals'
-  },
-  {
-    id: '3',
-    name: 'Weekly Notebook',
-    price: 19.99,
-    image: '/images/planner3.jpg',
-    description: 'Compact weekly planner with notes section',
-    category: 'notebooks'
-  },
-  {
-    id: '4',
-    name: 'Daily Planner',
-    price: 15.99,
-    image: '/images/planner4.jpg',
-    description: 'Simple and effective daily planner',
-    category: 'planners'
+async function getProducts() {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch products');
+    }
+    
+    const products = await response.json();
+    return products.map((product: any) => ({
+      id: product.id.toString(),
+      name: product.name,
+      price: parseFloat(product.price),
+      description: product.description,
+      image: product.image,
+      category: product.category,
+    }));
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
   }
-];
+}
 
-export default function Home() {
+export default async function Home() {
+  const featuredProducts = await getProducts();
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -93,7 +86,13 @@ export default function Home() {
                 Discover our most popular planners and journals
               </p>
             </div>
-            <ProductList products={featuredProducts} />
+            {featuredProducts.length > 0 ? (
+              <ProductList products={featuredProducts} />
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-600">No products available at the moment.</p>
+              </div>
+            )}
           </div>
         </div>
 
