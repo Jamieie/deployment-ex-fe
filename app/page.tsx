@@ -3,7 +3,25 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductList from '@/components/ProductList';
 
-async function getProducts() {
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  description: string;
+  category: string;
+}
+
+interface ApiProduct {
+  id: number;
+  name: string;
+  price: string;
+  image: string;
+  description: string;
+  category: string;
+}
+
+async function getProducts(): Promise<Product[]> {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
       headers: {
@@ -16,22 +34,22 @@ async function getProducts() {
       throw new Error('Failed to fetch products');
     }
     
-    const products = await response.json();
-    return products.map((product: any) => {
+    const products: ApiProduct[] = await response.json();
+    return products.map((product) => {
       try {
         return {
           id: product.id.toString(),
           name: product.name || '',
           price: parseFloat(product.price) || 0,
           description: product.description || '',
-          image: product.image || '/images/planner1.jpg', // 기본 이미지 설정
-          category: product.category || 'planners', // 기본 카테고리 설정
+          image: product.image || '/images/planner1.jpg',
+          category: product.category || 'planners',
         };
       } catch (error) {
         console.error('Error parsing product:', product, error);
         return null;
       }
-    }).filter(Boolean); // null 값 제거
+    }).filter((product): product is Product => product !== null);
   } catch (error) {
     console.error('Error fetching products:', error);
     return [];
